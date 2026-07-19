@@ -1,0 +1,637 @@
+// ORAM Media Dynamics — Production Archive Management System (PAMS)
+// Relational archive OS. Public site is one consumer.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+/** Cloudflare Workers build */
+generator cloudflare {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma-cloudflare"
+  runtime  = "cloudflare"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Auth & RBAC ───────────────────────────────────────────────────
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String
+  passwordHash String
+  roleId       String
+  role         Role      @relation(fields: [roleId], references: [id])
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  auditLogs    AuditLog[]
+  revisions    Revision[]
+  websiteConfigsUpdated WebsiteConfig[]
+  websiteSnapshotsCreated WebsiteSnapshot[]
+  mediaUploaded MediaAsset[] @relation("MediaUploadedBy")
+}
+
+model Role {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String           @id @default(cuid())
+  key         String           @unique
+  description String?
+  roles       RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String
+  entityType String
+  entityId   String?
+  summary    String
+  metaJson   String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Revision {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  snapshot   String
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+}
+
+// ─── Taxonomy ──────────────────────────────────────────────────────
+
+model Category {
+  id          String               @id @default(cuid())
+  name        String               @unique
+  slug        String               @unique
+  description String?
+  productions ProductionCategory[]
+}
+
+model Genre {
+  id          String            @id @default(cuid())
+  name        String            @unique
+  slug        String            @unique
+  productions ProductionGenre[]
+}
+
+model Tag {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  slug        String           @unique
+  productions ProductionTag[]
+  media       MediaTag[]
+}
+
+// ─── Organizations ─────────────────────────────────────────────────
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  kind        String   @default("production") // production | broadcaster | streamer | other
+  website     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  asProducer  Production[] @relation("ProductionCompany")
+  clients     Client[]
+  partners    Partner[]
+}
+
+model Client {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  companyId String?
+  company   Company?     @relation(fields: [companyId], references: [id])
+  website   String?
+  logoUrl   String?
+  notes     String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  productions Production[]
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+  logoUrl   String?
+  website   String?
+  order     Int      @default(0)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── People ────────────────────────────────────────────────────────
+
+model Person {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  bio         String?
+  photoUrl    String?
+  birthYear   Int?
+  nationality String?
+  website     String?
+  imdbUrl     String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  credits     ProductionCredit[]
+  filmography FilmographyCredit[]
+  mediaLinks  MediaPerson[]
+}
+
+// ─── Productions (ORAM archive + public case studies) ──────────────
+
+model Production {
+  id                   String   @id @default(cuid())
+  title                String
+  slug                 String   @unique
+  alternativeTitles    String? // JSON array
+  year                 Int?
+  yearNote             String?
+  runtime              String?
+  kind                 String   @default("feature") // feature | tv-series | telenovela | short | branded | documentary | event | other
+  status               String   @default("unknown") // released | ongoing | concluded | unknown
+  workflowStatus       String   @default("draft") // draft | research | verification | media-review | rights-review | ready | published | archived
+  archivalCategory     String   @default("requires-verification")
+  synopsis             String?
+  story                String? // fullDescription
+  challenge            String?
+  creativeDirection    String?
+  productionProcess    String?
+  behindTheScenes      String?
+  productionNotes      String?
+  resultsJson          String? // JSON [{value,label}]
+  interestingFactsJson String? // JSON string[]
+  oramRole             String?
+  owasRole             String?
+  productionCompanyId  String?
+  productionCompany    Company? @relation("ProductionCompany", fields: [productionCompanyId], references: [id])
+  productionCompanyText String? // free-text billing when no company row
+  clientId             String?
+  client               Client?  @relation(fields: [clientId], references: [id])
+  clientNameText       String?
+  broadcaster          String?
+  streamingPlatform    String?
+  featured             Boolean  @default(false)
+  sortOrder            Int      @default(999)
+  portraitPoster       Boolean  @default(false)
+  published            Boolean  @default(false)
+  seoTitle             String?
+  seoDescription       String?
+  seoCanonical         String?
+  homepageCampaign     String?
+  flagshipCandidate    Boolean  @default(false)
+  wizardStep           String   @default("overview")
+  wizardCompletedJson  String?  // JSON string[] of completed step ids
+  rightsChecklistJson  String?
+  verificationNotes    String?
+  rightsNotes          String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  categories   ProductionCategory[]
+  genres       ProductionGenre[]
+  tags         ProductionTag[]
+  credits      ProductionCredit[]
+  media        MediaAsset[]
+  trailers     Trailer[]
+  awards       ProductionAward[]
+  festivals    ProductionFestival[]
+  relatedFrom  ProductionRelation[] @relation("RelatedFrom")
+  relatedTo    ProductionRelation[] @relation("RelatedTo")
+  filmographyEntries FilmographyEntry[]
+  verifications VerificationItem[]
+  rights       RightsRecord[]
+  documents    Document[]
+  downloads    Download[]
+
+  @@index([workflowStatus])
+  @@index([published, featured, sortOrder])
+  @@index([archivalCategory])
+}
+
+model ProductionCategory {
+  productionId String
+  categoryId   String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([productionId, categoryId])
+}
+
+model ProductionGenre {
+  productionId String
+  genreId      String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  genre        Genre      @relation(fields: [genreId], references: [id], onDelete: Cascade)
+
+  @@id([productionId, genreId])
+}
+
+model ProductionTag {
+  productionId String
+  tagId        String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  tag          Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productionId, tagId])
+}
+
+model ProductionCredit {
+  id           String     @id @default(cuid())
+  productionId String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  personId     String?
+  person       Person?    @relation(fields: [personId], references: [id])
+  personName   String // denormalized for unverified names
+  role         String // Director | Producer | Cast | etc.
+  department   String? // cast | crew | creative
+  billingOrder Int        @default(0)
+  notes        String?
+
+  @@index([productionId])
+  @@index([personId])
+}
+
+model ProductionRelation {
+  id                 String     @id @default(cuid())
+  fromProductionId   String
+  toProductionId     String
+  relationType       String     @default("related")
+  fromProduction     Production @relation("RelatedFrom", fields: [fromProductionId], references: [id], onDelete: Cascade)
+  toProduction       Production @relation("RelatedTo", fields: [toProductionId], references: [id], onDelete: Cascade)
+
+  @@unique([fromProductionId, toProductionId])
+}
+
+// ─── Dual filmography collections ──────────────────────────────────
+
+model FilmographyEntry {
+  id              String      @id @default(cuid())
+  collection      String // oram | owas
+  productionId    String?
+  production      Production? @relation(fields: [productionId], references: [id])
+  title           String
+  year            Int      @default(0)
+  yearNote        String?
+  kind            String?
+  notes           String?
+  oramInvolvement String?
+  published       Boolean     @default(false)
+  sortOrder       Int         @default(999)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  credits         FilmographyCredit[]
+
+  @@unique([collection, title, year])
+  @@index([collection, sortOrder])
+  @@index([productionId])
+}
+
+model FilmographyCredit {
+  id        String           @id @default(cuid())
+  entryId   String
+  entry     FilmographyEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  personId  String?
+  person    Person?          @relation(fields: [personId], references: [id])
+  role      String // actor | director | writer | producer | executive-producer | casting-director | creator
+  character String?
+  notes     String?
+
+  @@index([entryId])
+}
+
+// ─── Media DAM ─────────────────────────────────────────────────────
+
+model MediaAsset {
+  id              String   @id @default(cuid())
+  title           String?
+  filename        String
+  originalName    String?
+  path            String // public URL path (legacy local or resolved URL)
+  storageProvider String   @default("local") // local | r2
+  objectKey       String?  // R2 object key for original
+  processingStatus String  @default("complete") // complete | pending_variants | failed
+  mimeType        String
+  kind            String   @default("image") // image | video | pdf | zip | other
+  role            String   @default("gallery") // hero | thumbnail | poster | still | bts | gallery | og | social | document | other
+  productionId    String?
+  production      Production? @relation(fields: [productionId], references: [id])
+  location        String?
+  photographer    String?
+  camera          String?
+  width           Int?
+  height          Int?
+  aspectRatio     String?
+  colourSpace     String?
+  fileSize        Int?
+  checksum        String?
+  description     String?
+  copyright       String?
+  expiry          DateTime?
+  rightsOwner     String?
+  approvalStatus  String   @default("pending") // pending | approved | rejected | archived
+  verificationStatus String @default("unverified") // unverified | verified | disputed
+  usageRights     String?
+  altText         String?
+  caption         String?
+  heroEligible    Boolean  @default(false)
+  posterEligible  Boolean  @default(false)
+  thumbnailEligible Boolean @default(false)
+  homepageEligible Boolean @default(false)
+  socialEligible  Boolean  @default(false)
+  ogEligible      Boolean  @default(false)
+  archiveStatus   String   @default("active") // active | vault | do-not-use
+  variantsJson    String?  // JSON { thumbnail, webp, avif, sizes[] }
+  sortOrder       Int      @default(0)
+  uploadedByUserId String?
+  uploadedBy       User?    @relation("MediaUploadedBy", fields: [uploadedByUserId], references: [id])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tags            MediaTag[]
+  people          MediaPerson[]
+  trailersAsPoster Trailer[] @relation("TrailerPoster")
+
+  @@index([productionId, role])
+  @@index([approvalStatus])
+  @@index([heroEligible])
+  @@index([checksum])
+  @@index([kind])
+  @@index([storageProvider])
+  @@index([objectKey])
+}
+
+model UploadSession {
+  id           String   @id @default(cuid())
+  userId       String
+  objectKey    String
+  mimeType     String
+  originalName String
+  productionId String?
+  role         String   @default("gallery")
+  maxBytes     Int
+  multipartId  String?
+  status       String   @default("pending") // pending | completed | cancelled | expired
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([userId, status])
+  @@index([expiresAt])
+}
+
+model MediaTag {
+  mediaId String
+  tagId   String
+  media   MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  tag     Tag        @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([mediaId, tagId])
+}
+
+model MediaPerson {
+  mediaId  String
+  personId String
+  media    MediaAsset @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  person   Person     @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([mediaId, personId])
+}
+
+model Trailer {
+  id              String      @id @default(cuid())
+  productionId    String
+  production      Production  @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  platform        String // youtube | vimeo | mux | mp4 | facebook | other
+  url             String?
+  youtubeId       String?
+  muxPlaybackId   String?
+  posterMediaId   String?
+  posterMedia     MediaAsset? @relation("TrailerPoster", fields: [posterMediaId], references: [id])
+  posterUrl       String?
+  durationSeconds Int?
+  officialStatus  String      @default("unverified") // official | unofficial | unverified | bts-only
+  preferred       Boolean     @default(false)
+  title           String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([productionId, preferred])
+}
+
+model Document {
+  id           String      @id @default(cuid())
+  title        String
+  path         String
+  mimeType     String?
+  productionId String?
+  production   Production? @relation(fields: [productionId], references: [id])
+  kind         String      @default("document")
+  notes        String?
+  createdAt    DateTime    @default(now())
+}
+
+model Download {
+  id           String      @id @default(cuid())
+  title        String
+  path         String
+  productionId String?
+  production   Production? @relation(fields: [productionId], references: [id])
+  public       Boolean     @default(false)
+  notes        String?
+  createdAt    DateTime    @default(now())
+}
+
+// ─── Awards & Festivals ────────────────────────────────────────────
+
+model Award {
+  id          String            @id @default(cuid())
+  name        String
+  organization String?
+  year        Int?
+  notes       String?
+  productions ProductionAward[]
+}
+
+model ProductionAward {
+  id           String     @id @default(cuid())
+  productionId String
+  awardId      String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  award        Award      @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  result       String? // winner | nominee | selection
+  notes        String?
+
+  @@unique([productionId, awardId])
+}
+
+model Festival {
+  id          String               @id @default(cuid())
+  name        String               @unique
+  website     String?
+  notes       String?
+  productions ProductionFestival[]
+}
+
+model ProductionFestival {
+  id           String     @id @default(cuid())
+  productionId String
+  festivalId   String
+  production   Production @relation(fields: [productionId], references: [id], onDelete: Cascade)
+  festival     Festival   @relation(fields: [festivalId], references: [id], onDelete: Cascade)
+  year         Int?
+  selection    String?
+  notes        String?
+
+  @@unique([productionId, festivalId, year])
+}
+
+// ─── Content & site ────────────────────────────────────────────────
+
+model Article {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?
+  body        String?
+  coverUrl    String?
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  quote     String
+  author    String
+  role      String?
+  company   String?
+  featured  Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model TimelineEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  year        Int?
+  date        DateTime?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+model SiteSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+// ─── ORAM OS — Website Builder 2.0 ─────────────────────────────────
+
+/** Draft vs published website configuration (JSON document) */
+model WebsiteConfig {
+  id              String   @id // "draft" | "published"
+  configJson      String
+  updatedAt       DateTime @updatedAt
+  updatedByUserId String?
+  updatedBy       User?    @relation(fields: [updatedByUserId], references: [id])
+
+  @@map("website_config")
+}
+
+/** Named website snapshots for one-click restore */
+model WebsiteSnapshot {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  configJson      String
+  createdAt       DateTime @default(now())
+  createdByUserId String?
+  createdBy       User?    @relation(fields: [createdByUserId], references: [id])
+
+  @@index([createdAt])
+  @@map("website_snapshot")
+}
+
+// ─── Rights & Verification ─────────────────────────────────────────
+
+model RightsRecord {
+  id           String      @id @default(cuid())
+  productionId String?
+  production   Production? @relation(fields: [productionId], references: [id])
+  mediaPath    String?
+  owner        String?
+  status       String      @default("pending") // oram-cleared | pending | do-not-use | broadcaster
+  usageApproval String?
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+model VerificationItem {
+  id           String      @id @default(cuid())
+  productionId String?
+  production   Production? @relation(fields: [productionId], references: [id])
+  field        String
+  claim        String
+  status       String      @default("open") // open | resolved | disputed
+  source       String?
+  sourceUrl    String?
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([status])
+}
+
+model ServiceOffering {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String?
+  icon        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

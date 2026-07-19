@@ -1,9 +1,10 @@
 "use client";
 
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import {
   motion,
   useReducedMotion,
+  useInView,
   type HTMLMotionProps,
   type Variants,
 } from "framer-motion";
@@ -48,7 +49,19 @@ const build = (variant: RevealVariant): Variants => {
   }
 };
 
-/** Variant-driven scroll reveal. Falls back to instant render for reduced motion. */
+function intersectionRatio(el: HTMLElement, amount: number): boolean {
+  const rect = el.getBoundingClientRect();
+  if (rect.height <= 0) return false;
+  const vh = window.innerHeight;
+  const visiblePx = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+  return visiblePx / rect.height >= amount;
+}
+
+/**
+ * Scroll reveal driven by viewport visibility.
+ * Lenis smooth scroll does not emit native scroll events — SmoothScroll
+ * re-dispatches them so IntersectionObserver (and this component) stay in sync.
+ */
 export function Reveal({
   children,
   variant = "up",
@@ -59,15 +72,49 @@ export function Reveal({
   ...props
 }: RevealProps) {
   const reduced = useReducedMotion();
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once, amount });
+  const [scrollVisible, setScrollVisible] = useState(false);
+  const visible = reduced || inView || scrollVisible;
 
-  if (reduced) return <motion.div {...props}>{children}</motion.div>;
+  useEffect(() => {
+    if (reduced || visible) return;
+
+    const el = ref.current;
+    if (!el) return;
+
+    const check = () => {
+      if (intersectionRatio(el, amount)) setScrollVisible(true);
+    };
+
+    check();
+    const afterTransition = window.setTimeout(check, 700);
+
+    window.addEventListener("scroll", check, { passive: true });
+    window.addEventListener("resize", check, { passive: true });
+
+    return () => {
+      window.clearTimeout(afterTransition);
+      window.removeEventListener("scroll", check);
+      window.removeEventListener("resize", check);
+    };
+  }, [amount, reduced, visible]);
+
+  if (reduced) {
+    const { className, id } = props;
+    return (
+      <div ref={ref} className={className} id={id}>
+        {children}
+      </div>
+    );
+  }
 
   return (
     <motion.div
+      ref={ref}
       variants={build(variant)}
       initial="hidden"
-      whileInView="show"
-      viewport={{ once, amount }}
+      animate={visible ? "show" : "hidden"}
       transition={{ duration, delay, ease: EASE }}
       {...props}
     >

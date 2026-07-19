@@ -33,8 +33,8 @@ export default async function AboutPage() {
         title="A Lusaka studio for Zambian screens."
         description="Oram Media Dynamics is led by director Owas Ray Mwape. We make television drama, features and institutional films from Chainama, Lusaka — work that has reached Zambezi Magic, DStv, GOtv and Showmax."
         minHeight="tall"
-        image="/about/mwape-multichoice-awards.jpg"
-        imageAlt="Mwape family at the MultiChoice Zambia Film and Television Awards"
+        image="/media/team/owas-ray-mwape-ep.jpg"
+        imageAlt="Owas Ray Mwape on set — founder and film director, Oram Media Dynamics"
       />
 
       {/* Mission */}
@@ -69,8 +69,8 @@ export default async function AboutPage() {
             <Reveal variant="scale">
               <ParallaxMedia className="relative aspect-[4/3] overflow-hidden bg-surface-2" strength={8}>
                 <Image
-                  src="/about/mwape-multichoice-awards.jpg"
-                  alt="Mwape family at the MultiChoice Zambia Film and Television Awards"
+                  src="/media/awards/zikomo-owas-2025.jpg"
+                  alt="Owas Ray Mwape at the Zikomo Awards"
                   fill
                   quality={90}
                   sizes="(max-width: 1024px) 100vw, 50vw"

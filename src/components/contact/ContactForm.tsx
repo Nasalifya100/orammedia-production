@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
@@ -24,8 +24,8 @@ export function ContactForm() {
   const {
     register,
     handleSubmit,
-    watch,
     trigger,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
@@ -41,7 +41,7 @@ export function ContactForm() {
     },
   });
 
-  const values = watch();
+  const values = (useWatch({ control }) ?? {}) as Partial<ContactFormValues>;
 
   const stepFields: (keyof ContactFormValues)[][] = [
     ["projectType", "budgetRange", "timeline", "description"],
@@ -66,7 +66,7 @@ export function ContactForm() {
       });
 
       if (!res.ok) {
-        const body = await res.json();
+        const body = (await res.json()) as { error?: string };
         throw new Error(body.error ?? "Submission failed");
       }
 
@@ -219,15 +219,15 @@ export function ContactForm() {
 
           {step === 2 && (
             <div className="space-y-4 text-sm">
-              <ReviewRow label="Project Type" value={projectTypeLabels[values.projectType]} />
-              <ReviewRow label="Budget" value={budgetLabels[values.budgetRange]} />
-              <ReviewRow label="Timeline" value={values.timeline} />
-              <ReviewRow label="Brief" value={values.description} />
+              <ReviewRow label="Project Type" value={values.projectType ? projectTypeLabels[values.projectType] : ""} />
+              <ReviewRow label="Budget" value={values.budgetRange ? budgetLabels[values.budgetRange] : ""} />
+              <ReviewRow label="Timeline" value={values.timeline ?? ""} />
+              <ReviewRow label="Brief" value={values.description ?? ""} />
               <hr className="my-6 border-line" />
-              <ReviewRow label="Company" value={values.companyName} />
-              <ReviewRow label="Name" value={values.fullName} />
-              <ReviewRow label="Email" value={values.email} />
-              <ReviewRow label="Phone" value={values.phone} />
+              <ReviewRow label="Company" value={values.companyName ?? ""} />
+              <ReviewRow label="Name" value={values.fullName ?? ""} />
+              <ReviewRow label="Email" value={values.email ?? ""} />
+              <ReviewRow label="Phone" value={values.phone ?? ""} />
             </div>
           )}
         </motion.div>

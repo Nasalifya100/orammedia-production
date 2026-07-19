@@ -12,23 +12,27 @@ import type { Project } from "@/types";
 
 interface SelectedWorkProps {
   projects: Project[];
+  eyebrow?: string;
+  heading?: string;
 }
 
 /** Editorial featured-work rows — one release at a time, alternating. */
-export function SelectedWork({ projects }: SelectedWorkProps) {
-  const featured = projects
-    .filter((p) => p.featured)
-    .sort((a, b) => a.order - b.order);
+export function SelectedWork({
+  projects,
+  eyebrow = "Selected Work",
+  heading = "Recent releases",
+}: SelectedWorkProps) {
+  const featured = [...projects].sort((a, b) => a.order - b.order);
 
   return (
     <section id="work" className="section border-t border-line bg-surface-0">
       <Container>
         <div className="mb-16 flex flex-wrap items-end justify-between gap-6 md:mb-24">
           <div>
-            <p className="eyebrow mb-5">Selected Work</p>
+            <p className="eyebrow mb-5">{eyebrow}</p>
             <SplitHeading
               as="h2"
-              text="Recent releases"
+              text={heading}
               className="display display-lg text-foreground"
             />
           </div>
@@ -70,7 +74,7 @@ export function SelectedWork({ projects }: SelectedWorkProps) {
                       )}
                     >
                       <Image
-                        src={project.thumbnail}
+                        src={project.thumbnail || project.posterUrl}
                         alt={project.title}
                         fill
                         quality={88}

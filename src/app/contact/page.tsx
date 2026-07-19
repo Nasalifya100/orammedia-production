@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { PageHero } from "@/components/ui/PageHero";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { siteConfig } from "@/lib/data";
+import { siteConfig } from "@/lib/data/mock-data";
 
 export const metadata: Metadata = {
   title: "Contact — Film Production Lusaka",
@@ -36,8 +36,8 @@ export default function ContactPage() {
         eyebrow="Get in Touch"
         title="Start a project."
         description="Tell us about your vision. We typically respond within 24 hours."
-        image="/projects/inkondo-maxres.jpg"
-        imageAlt="On set for Inkondo — an Oram Media Dynamics production"
+        image="/media/bts/inkondo-shoot-s2.jpg"
+        imageAlt="Oram Media Dynamics on location — Inkondo Season 2"
       />
 
       <section className="section bg-surface-0">

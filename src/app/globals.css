@@ -23,8 +23,10 @@
   --accent-glow: rgba(247, 147, 30, 0.20);
 
   /* Type */
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-inter: "Inter Variable", Inter, system-ui, sans-serif;
+  --font-fraunces: "Fraunces Variable", Fraunces, Georgia, "Times New Roman", serif;
+  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-inter);
 
   /* Rhythm */
   --container-max: 1560px;

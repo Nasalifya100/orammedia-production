@@ -33,9 +33,30 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# PAMS local database & uploads
+/prisma/*.db
+/prisma/*.db-journal
+/public/uploads/pams/
+/public/assets/dam/
+
 # vercel
 .vercel
+
+# opennext / cloudflare
+.open-next/
+.wrangler/
+cloudflare-env.d.ts
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# Local database backups
+*.db.backup-*
+pams.db.backup-*
+prisma/*.db.backup-*
+
+# Local exports
+exports/

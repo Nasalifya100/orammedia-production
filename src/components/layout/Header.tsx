@@ -9,7 +9,7 @@ import { useScrollPosition } from "@/hooks/useScrollPosition";
 import { ScrollProgress } from "@/components/layout/ScrollProgress";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { siteConfig } from "@/lib/data";
+import { siteConfig } from "@/lib/data/mock-data";
 
 const navLinks = [
   { href: "/projects", label: "Work" },

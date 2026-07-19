@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { SplitHeading } from "@/components/motion/SplitHeading";
 import { MagneticButton } from "@/components/motion/MagneticButton";
 import { BrandLogo } from "@/components/brand/BrandLogo";
-import { siteConfig } from "@/lib/data";
+import { siteConfig } from "@/lib/data/mock-data";
 
 const columns = [
   {

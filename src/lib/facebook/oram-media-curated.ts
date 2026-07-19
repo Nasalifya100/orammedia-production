@@ -1,3 +1,4 @@
+import { getSiteUrl } from "@/lib/site-url";
 import type { FacebookPageData, FacebookPost } from "./types";
 import { ORAM_FACEBOOK_URLS } from "./types";
 
@@ -95,8 +96,7 @@ export function getFacebookDerivedContent() {
       tagline: "Film & television from Lusaka",
       description:
         "Lusaka film and television production — drama series, features and branded films for Zambezi Magic, Showmax, DStv and institutional clients across Zambia.",
-      /** Replace with the live production domain before launch (not Facebook). */
-      url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://orammedia.com",
+      url: getSiteUrl(),
       logo: "/brand/oram-media-logo.png",
       logoWordmark: "/brand/oram-media-logo.png",
       email: "orammediadynamics@gmail.com",

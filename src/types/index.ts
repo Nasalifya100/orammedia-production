@@ -18,16 +18,32 @@ export type ProjectCategory =
 
 export type ProjectCategoryFilter = "all" | ProjectCategory;
 
+export interface ProjectSource {
+  label: string;
+  url?: string;
+}
+
+export interface ProjectLink {
+  label: string;
+  url: string;
+}
+
 export interface Project {
   id: string;
   title: string;
   slug: string;
   category: ProjectCategory;
+  /** Opening lede — hero / card summary */
   description: string;
+  /** Synopsis body */
   fullDescription: string;
   clientName: string;
   year: number;
   duration: string;
+  genre?: string;
+  productionCompany?: string;
+  broadcaster?: string;
+  streamingPlatform?: string;
   thumbnail: string;
   gallery: string[];
   videoUrl: string;
@@ -38,13 +54,44 @@ export interface Project {
   /** Optional shorter clip for hover preview */
   previewYoutubeId?: string;
   behindTheScenes?: string;
-  /** Case-study narrative */
+  /** The Challenge */
   challenge?: string;
+  /** Creative Direction (legacy field name: approach) */
   approach?: string;
-  /** Outcome metrics, e.g. { value: "600+", label: "Episodes delivered" } */
+  /** Production Process */
+  productionProcess?: string;
+  /** Outcome metrics / The Result */
   results?: { value: string; label: string }[];
-  /** Production credits, e.g. { role: "Director", name: "Owas Ray Mwape" } */
+  /** Production credits */
   credits?: { role: string; name: string }[];
+  relatedProjectSlugs?: string[];
+  officialLinks?: ProjectLink[];
+  /** Research sources — not rendered on public page */
+  sources?: ProjectSource[];
+  /** Verified awards / distinctions for the title */
+  awardsList?: { name: string; year?: number; organization?: string }[];
+  /** Short verified production facts / trivia */
+  interestingFacts?: string[];
+  /** Alternative titles */
+  alternativeTitles?: string[];
+  /** ORAM's role on the production */
+  oramRole?: string;
+  /**
+   * Archival classification — one primary bucket.
+   * Not every Owas Ray Mwape credit is an ORAM production.
+   */
+  archivalCategory?:
+    | "oram-production"
+    | "oram-co-production"
+    | "oram-service"
+    | "directed-by-owas"
+    | "produced-by-owas"
+    | "executive-produced-by-owas"
+    | "acting-credit-only"
+    | "personal-filmography"
+    | "requires-verification";
+  /** False = content held until honest key art exists */
+  published?: boolean;
   /** True when the key art is a portrait poster (never stretch into landscape) */
   portraitPoster?: boolean;
   featured: boolean;
@@ -55,6 +102,15 @@ export interface ShowreelConfig {
   muxPlaybackId?: string;
   videoUrl: string;
   posterUrl: string;
+}
+
+export interface NewsPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  date: string;
+  url: string;
+  image?: string;
 }
 
 export interface TeamMember {

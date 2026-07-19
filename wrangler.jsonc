@@ -1,0 +1,145 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "orammedia-staging",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public"
+  ],
+  "rules": [
+    {
+      "type": "CompiledWasm",
+      "globs": ["**/*.wasm"],
+      "fallthrough": true
+    }
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "orammedia-staging"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "orammedia-staging",
+      "database_id": "954a7084-bf80-46d1-a30a-6db8fc2d4293"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DAM_BUCKET",
+      "bucket_name": "orammedia-dam-staging"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "02a389de3302438c9823a5170ca0a603"
+    }
+  ],
+  "vars": {
+    "DATABASE_PROVIDER": "d1",
+    "STORAGE_PROVIDER": "r2",
+    "NEXTJS_ENV": "production"
+  },
+  "env": {
+    "staging": {
+      "name": "orammedia-staging",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "orammedia-staging",
+          "database_id": "954a7084-bf80-46d1-a30a-6db8fc2d4293"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "DAM_BUCKET",
+          "bucket_name": "orammedia-dam-staging"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "RATE_LIMIT_KV",
+          "id": "02a389de3302438c9823a5170ca0a603"
+        }
+      ],
+      "vars": {
+        "DATABASE_PROVIDER": "d1",
+        "STORAGE_PROVIDER": "r2",
+        "CF_ENV": "staging",
+        "CONTACT_EMAIL_MODE": "auto",
+        "NEXTJS_ENV": "production",
+        "NEXT_PUBLIC_SITE_URL": "https://orammedia-staging.nasalifya007.workers.dev"
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "orammedia-staging"
+        }
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      }
+    },
+    "production": {
+      "name": "orammedia-production",
+      "compatibility_date": "2025-01-15",
+      "compatibility_flags": [
+        "nodejs_compat",
+        "global_fetch_strictly_public"
+      ],
+      "rules": [
+        {
+          "type": "CompiledWasm",
+          "globs": ["**/*.wasm"],
+          "fallthrough": true
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "orammedia-production",
+          "database_id": "06399f3e-59dd-4be8-9c07-bca2579564cb"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "DAM_BUCKET",
+          "bucket_name": "orammedia-dam-production"
+        }
+      ],
+      "kv_namespaces": [
+        {
+          "binding": "RATE_LIMIT_KV",
+          "id": "fd5b9f6c181643c584c355f10e8254ab"
+        }
+      ],
+      "vars": {
+        "DATABASE_PROVIDER": "d1",
+        "STORAGE_PROVIDER": "r2",
+        "CF_ENV": "production",
+        "CONTACT_EMAIL_MODE": "auto",
+        "NEXTJS_ENV": "production",
+        "NEXT_PUBLIC_SITE_URL": "https://orammedia.com"
+      },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "orammedia-production"
+        }
+      ],
+      "assets": {
+        "directory": ".open-next/assets",
+        "binding": "ASSETS"
+      }
+    }
+  }
+}

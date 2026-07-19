@@ -1,43 +1,33 @@
-import { HeroShowreel } from "@/components/home/HeroShowreel";
-import { ManifestoSection } from "@/components/home/ManifestoSection";
-import { SelectedWork } from "@/components/home/SelectedWork";
-import { CapabilitiesSection } from "@/components/home/CapabilitiesSection";
-import { PartnersMarquee } from "@/components/home/PartnersMarquee";
-import { FounderSection } from "@/components/home/FounderSection";
-import { NewsSection } from "@/components/home/NewsSection";
-import { CTASection } from "@/components/home/CTASection";
+import type { Metadata } from "next";
+import { HomePageView } from "@/components/pages/HomePageView";
 import {
-  getProjects,
-  getServices,
-  getTeamMembers,
-  getClientLogos,
-  getShowreelConfig,
-  getNewsPosts,
-} from "@/lib/data";
+  getWebsiteConfiguration,
+} from "@/lib/data/website";
+import { siteConfig } from "@/lib/data/mock-data";
 
 export const revalidate = 3600;
 
-export default async function HomePage() {
-  const [allProjects, services, teamMembers, clientLogos, showreel, news] =
-    await Promise.all([
-      getProjects(),
-      getServices(),
-      getTeamMembers(),
-      getClientLogos(),
-      getShowreelConfig(),
-      getNewsPosts(),
-    ]);
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getWebsiteConfiguration("published");
+  const ogImage = config.openGraph.imagePath ?? "/projects/inkondo-billboard.jpg";
 
-  return (
-    <>
-      <HeroShowreel showreel={showreel} />
-      <ManifestoSection />
-      <SelectedWork projects={allProjects} />
-      <CapabilitiesSection services={services} />
-      <PartnersMarquee logos={clientLogos} />
-      <FounderSection members={teamMembers} />
-      <NewsSection posts={news} />
-      <CTASection />
-    </>
-  );
+  return {
+    title: config.seo.title ?? `${config.siteName} — ${siteConfig.tagline}`,
+    description: config.seo.description ?? config.siteDescription,
+    openGraph: {
+      title: config.openGraph.title ?? config.siteName,
+      description: config.openGraph.description ?? config.siteDescription,
+      images: [{ url: ogImage, alt: config.openGraph.title ?? config.siteName }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: config.openGraph.title ?? config.siteName,
+      description: config.openGraph.description ?? config.siteDescription,
+      images: [ogImage],
+    },
+  };
+}
+
+export default function HomePage() {
+  return <HomePageView scope="published" />;
 }

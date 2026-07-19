@@ -1,36 +1,116 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Oram Media
+
+Premium film and video production company website built with Next.js 14+, TypeScript, Tailwind CSS, and Framer Motion.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS v4
+- **Animation:** Framer Motion
+- **Forms:** React Hook Form + Zod
+- **CMS:** Sanity (live data with mock fallback)
+- **Video:** Mux adaptive streaming (`@mux/mux-player-react`)
+- **Hosting:** Vercel-ready
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local`:
 
-## Learn More
+```bash
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project Structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+├── app/                  # App Router pages
+│   ├── page.tsx          # Homepage
+│   ├── projects/         # Portfolio + detail pages
+│   ├── about/
+│   ├── services/
+│   ├── contact/
+│   └── api/contact/      # Form submission endpoint
+├── components/
+│   ├── home/             # Homepage sections
+│   ├── layout/           # Header, Footer, Cookie consent
+│   ├── projects/         # Portfolio components
+│   ├── contact/          # Contact form
+│   └── ui/               # Shared UI primitives
+├── lib/
+│   ├── data/
+│   │   ├── index.ts      # Sanity fetchers (live + mock fallback)
+│   │   └── mock-data.ts  # Demo content when CMS is empty
+│   ├── mux.ts            # Mux poster/stream helpers
+│   ├── sanity/           # CMS client & GROQ queries
+│   └── validations/      # Zod schemas
+└── types/                # TypeScript interfaces
+sanity/
+└── schema/               # Sanity content models
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Sanity CMS Setup
 
-## Deploy on Vercel
+1. Create a project at [sanity.io](https://sanity.io)
+2. Add to `.env.local`:
+   ```
+   NEXT_PUBLIC_SANITY_PROJECT_ID=your_id
+   NEXT_PUBLIC_SANITY_DATASET=production
+   SANITY_API_TOKEN=your_read_token
+   SANITY_REVALIDATE_SECRET=random_secret
+   ```
+3. Run the studio: `npm run sanity`
+4. Create a **Site Settings** document (singleton) for the homepage showreel
+5. Add projects with optional **Mux Playback ID** per project
+6. Configure a Sanity webhook → `POST /api/revalidate?secret=YOUR_SECRET` on publish
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Content models: Site Settings, Project, Client Logo, Team Member, Service, Testimonial, Award.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Fallback:** If Sanity is unconfigured or empty, the site uses mock data automatically.
+
+## Mux Video Setup
+
+1. Upload showreel/project videos at [dashboard.mux.com](https://dashboard.mux.com)
+2. Copy the **Playback ID** for each asset
+3. Add to `.env.local`:
+   ```
+   NEXT_PUBLIC_MUX_PLAYBACK_ID=showreel_playback_id
+   ```
+4. Or set per-project in Sanity (`muxPlaybackId` field) and in Site Settings for the hero
+
+The `MediaPlayer` component prefers Mux streaming, then falls back to direct MP4 URLs.
+
+## Features
+
+- Full-viewport autoplay showreel hero
+- Filterable portfolio with ISR project pages
+- Multi-step contact form with Zod validation
+- Client testimonials carousel
+- Awards & client logo marquee
+- Cookie consent banner
+- SEO metadata, sitemap, robots.txt
+- Glassmorphism UI with jewel-toned accents
+
+## Production Deployment
+
+Deploy to Vercel:
+
+```bash
+npx vercel
+```
+
+Replace demo video URLs with Mux playback IDs for production-grade adaptive streaming.
+
+## License
+
+Private — Oram Media © 2025

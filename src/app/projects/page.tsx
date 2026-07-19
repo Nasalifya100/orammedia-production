@@ -30,8 +30,8 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
         title="Our Work"
         description="Original content that captivates audiences across TV and digital platforms — from Zambezi Magic dramas to feature films and national campaigns."
         minHeight="tall"
-        image="/projects/inkondo-maxres.jpg"
-        imageAlt="Inkondo production still"
+        image="/media/bts/inkondo-shoot-s2.jpg"
+        imageAlt="Inkondo Season 2 shoot — Oram Media Dynamics for Zambezi Magic"
       />
 
       <section className="section bg-surface-0">

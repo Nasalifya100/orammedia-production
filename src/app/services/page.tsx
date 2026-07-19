@@ -24,8 +24,8 @@ export default async function ServicesPage() {
         title="Full-spectrum production."
         description="From concept to final grade — end-to-end production tailored to broadcast, film and branded content."
         minHeight="tall"
-        image="/projects/look-in-the-mirror.jpg"
-        imageAlt="Cinematic still from Look in the Mirror, directed by Owas Ray Mwape"
+        image="/media/bts/inkondo-shoot-s2-b.jpg"
+        imageAlt="Oram Media Dynamics crew on the Inkondo Season 2 location"
       />
 
       <section className="section bg-surface-0">

@@ -12,9 +12,10 @@ export function CTASection() {
     <section className="relative overflow-hidden border-t border-line bg-surface-0">
       <ParallaxMedia className="absolute inset-0" strength={12}>
         <Image
-          src="/projects/inkondo-maxres.jpg"
-          alt=""
+          src="/projects/inkondo-billboard.jpg"
+          alt="Inkondo production still (decorative background)"
           fill
+          quality={88}
           sizes="100vw"
           className="object-cover opacity-30"
           aria-hidden

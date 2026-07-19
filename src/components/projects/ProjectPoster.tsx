@@ -27,7 +27,7 @@ export function ProjectPoster({ project, index = 0 }: ProjectPosterProps) {
           )}
         >
           <Image
-            src={project.thumbnail}
+            src={project.thumbnail || project.posterUrl}
             alt={project.title}
             fill
             quality={88}

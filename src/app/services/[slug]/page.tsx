@@ -55,8 +55,8 @@ export default async function ServiceDetailPage({ params }: ServicePageProps) {
         title={service.title}
         description={service.description}
         minHeight="tall"
-        image="/about/studio-zuba.png"
-        imageAlt={service.title}
+        image="/media/team/owas-ray-mwape-ep.jpg"
+        imageAlt={`${service.title} — Oram Media Dynamics on set`}
       />
 
       <section className="section bg-surface-0">

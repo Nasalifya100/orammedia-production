@@ -3,7 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Reveal } from "@/components/motion/Reveal";
 import { SplitHeading } from "@/components/motion/SplitHeading";
-import type { NewsPost } from "@/lib/data";
+import type { NewsPost } from "@/types";
 
 interface NewsSectionProps {
   posts: NewsPost[];

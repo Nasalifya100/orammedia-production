@@ -26,8 +26,8 @@ export default async function BlogPage() {
         title="Latest from the studio."
         description={`Dispatches from our productions and Oram TV — followed by ${pageInfo.fanCount?.toLocaleString() ?? "10,000+"} across Zambian film and television.`}
         minHeight="tall"
-        image="/projects/zuba-preview-maxres.jpg"
-        imageAlt="Production still from Zuba on Zambezi Magic"
+        image="/media/awards/zikomo-owas-2025.jpg"
+        imageAlt="Owas Ray Mwape at the Zikomo Awards"
       />
 
       <section className="section bg-surface-0">
