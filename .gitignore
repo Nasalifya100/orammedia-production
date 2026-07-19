@@ -60,3 +60,5 @@ prisma/*.db.backup-*
 
 # Local exports
 exports/
+d1-current.sql
+production-d1-schema.sql
